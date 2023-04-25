@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>OpenAI Whisper API Demo</title>
+  <!-- Import Materialize CSS framework -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <style>
+    /* Customize Materialize styles */
+    .card {
+      margin-top: 2rem;
+    }
+    .card-content {
+      padding: 1rem;
+    }
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    #save-btn {
+        display: none;
+        margin-top: 1rem;
+    }
+    @keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    }
+
+    .card {
+    animation: fadeInUp 1s ease forwards;
+    }
+
+    .card:nth-child(2) {
+    animation-delay: 0.3s;
+    }
+  </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-wrapper container">
+          <a href="#" class="brand-logo">AI Audio/Video Transcription</a>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="#transcription">Transcription</a></li>
+            <li><a href="#quiz-generation">Quiz Generation</a></li>
+            <li><a href="#topic-summarizer">Topic Summarizer</a></li>
+          </ul>
+        </div>
+      </nav>
+  <div class="container">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Transcribe Audio/Video File</span>
+        <form>
+          <div class="file-field input-field">
+            <div class="btn">
+              <span>Choose File</span>
+              <input type="file" id="file-input">
+            </div>
+            <div class="file-path-wrapper">
+              <input class="file-path validate" type="text" placeholder="Upload an audio file">
+            </div>
+          </div>
+          <button class="btn waves-effect waves-light" type="submit" id="submit-btn">Submit</button>
+        </form>
+        <button class="btn waves-effect waves-light" id="save-btn">Save as Text</button>
+      </div>
+    </div>
+    <div class="card" id="result-card" style="display: none;">
+      <div class="card-content">
+        <span class="card-title">Transcription Result</span>
+        <p id="result-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Materialize JS library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <script>
+    // Add event listener to submit button
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.addEventListener('click', (event) => {
+      event.preventDefault(); // Prevent form from submitting
+      const fileInput = document.getElementById('file-input');
+      const file = fileInput.files[0];
+
+      // Create FormData object and append file to it
+      const formData = new FormData();
+        formData.append('file', file);
+        formData.append('model', 'whisper-1');
+
+      // Send POST request to Whisper API endpoint
+      const apiKey = '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';
+        formData.append('file', file);
+        formData.append('model', 'whisper-1');
+
+        const whisperUrl = 'https://api.openai.com/v1/audio/transcriptions';
+        fetch(whisperUrl, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: formData
+        })
+      .then(response => response.json())
+      .then(data => {
+        const resultCard = document.getElementById('result-card');
+        const resultText = document.getElementById('result-text');
+        resultText.textContent = data.text;
+        resultCard.style.display = 'block';
+        saveBtn.style.display = 'block';
+        })
+      .catch(error => console.error(error));
+    });
+
+    function saveAsTextFile(text, filename) {
+        const element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.addEventListener('click', () => {
+        const resultText = document.getElementById('result-text');
+        saveAsTextFile(resultText.textContent, 'transcription.txt');
+    });
+    
+  </script>
+</body>
+</html>
